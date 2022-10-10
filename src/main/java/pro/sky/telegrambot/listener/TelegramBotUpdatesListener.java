@@ -5,13 +5,15 @@ import com.pengrad.telegrambot.UpdatesListener;
 import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.request.SendMessage;
+import com.pengrad.telegrambot.response.SendResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.util.List;
+
+import static pro.sky.telegrambot.constants.TelegramBotMsgConstants.*;
 
 @Service
 public class TelegramBotUpdatesListener implements UpdatesListener {
@@ -36,20 +38,26 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
             Message message = update.message();
 
             // Search for the INITIAL_MSG
-            if (message.text().equals("/start")) {
+            if (message.text().equals(INITIAL_MSG)) {
                 // Send GREETINGS_MSG if INITIAL_MSG was found
                 logger.info("Bot initial message received: {}", message.text());
-
-                // Create message to send and send it to chat defined by id
-                SendMessage sendMessage = new SendMessage(message.chat().id(), "Greetings from ReminderBot!");
-                telegramBot.execute(sendMessage);
+                sendMessage(message.chat().id(), GREETING_MSG);
             } else {
-                // Create message to send and send it to chat defined by id
-                SendMessage sendMessage = new SendMessage(message.chat().id(), "There's nothing more I can do for now \uD83D\uDE14");
-                telegramBot.execute(sendMessage);
+                sendMessage(message.chat().id(), NOTHING_ELSE_MSG);
             }
         });
         return UpdatesListener.CONFIRMED_UPDATES_ALL;
+    }
+
+    private void sendMessage(Long chatId, String textToSend) {
+        // Create message to send and send it to chat defined by id
+        SendMessage sendMessage = new SendMessage(chatId, textToSend);
+        SendResponse response = telegramBot.execute(sendMessage);
+
+        // Check if msg was not sent and log the error
+        if (!response.isOk()) {
+            logger.warn("Message was not sent, error code: {}", response.errorCode());
+        }
     }
 
 }
