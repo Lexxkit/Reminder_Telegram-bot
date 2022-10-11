@@ -9,6 +9,8 @@ import com.pengrad.telegrambot.response.SendResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import pro.sky.telegrambot.entity.NotificationTask;
+import pro.sky.telegrambot.service.NotificationTaskService;
 
 import javax.annotation.PostConstruct;
 import java.util.List;
@@ -21,9 +23,11 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
     private final Logger logger = LoggerFactory.getLogger(TelegramBotUpdatesListener.class);
 
     private final TelegramBot telegramBot;
+    private final NotificationTaskService notificationTaskService;
 
-    public TelegramBotUpdatesListener(TelegramBot telegramBot) {
+    public TelegramBotUpdatesListener(TelegramBot telegramBot, NotificationTaskService notificationTaskService) {
         this.telegramBot = telegramBot;
+        this.notificationTaskService = notificationTaskService;
     }
 
     @PostConstruct
@@ -43,10 +47,18 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
                 logger.info("Bot initial message received: {}", message.text());
                 sendMessage(message.chat().id(), GREETING_MSG);
             } else {
-                sendMessage(message.chat().id(), NOTHING_ELSE_MSG);
+                NotificationTask notificationTask = notificationTaskService.saveTask(message);
+                logger.info("New task was saved: {}", notificationTask);
+                sendMessage(message.chat().id(), createSuccessMsg(notificationTask));
             }
         });
         return UpdatesListener.CONFIRMED_UPDATES_ALL;
+    }
+
+    private String createSuccessMsg(NotificationTask notificationTask) {
+        return String.format("OK, I will remind you about '%s' on %s",
+                notificationTask.getNotificationMessage(),
+                notificationTask.getNotificationDate());
     }
 
     private void sendMessage(Long chatId, String textToSend) {
