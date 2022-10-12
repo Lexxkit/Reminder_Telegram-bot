@@ -6,5 +6,5 @@ public class TelegramBotMsgConstants {
     public static final String GREETING_MSG = "Greetings from ReminderBot!\n" +
             "I will remind you about everything you ask me.\n" + PROBLEM_OCCURS_MSG;
     public static final String DATE_TIME_FORMAT = "dd.MM.yyyy HH:mm";
-    public static final String REMINDER_TEXT_PATTERN = "([0-9\\.\\:\\s]{16})(\\s)([\\W+]+)";
+    public static final String REMINDER_TEXT_PATTERN = "([0-9\\.\\:\\s]{16})(\\s)([\\W+|\\w+]+)";
 }

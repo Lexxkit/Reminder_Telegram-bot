@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import pro.sky.telegrambot.entity.NotificationTask;
+import pro.sky.telegrambot.exception.TextPatternDoesNotMatchException;
 import pro.sky.telegrambot.service.NotificationTaskService;
 
 import javax.annotation.PostConstruct;
@@ -54,7 +55,7 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
                     // Save task to DB if no problems found and send success message to user
                     NotificationTask notificationTask = notificationTaskService.saveTask(chatId, message.text());
                     sendMessage(chatId, createSuccessMsg(notificationTask));
-                } catch (NullPointerException | DateTimeParseException e) {
+                } catch (IndexOutOfBoundsException | TextPatternDoesNotMatchException | DateTimeParseException e) {
                     // In case of wrong user input don't save to DB and send message to user
                     logger.warn("Wrong pattern in message: {}", message.text());
                     e.printStackTrace();
