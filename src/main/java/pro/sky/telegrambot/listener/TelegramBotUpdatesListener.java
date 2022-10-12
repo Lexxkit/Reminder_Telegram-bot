@@ -14,6 +14,7 @@ import pro.sky.telegrambot.entity.NotificationTask;
 import pro.sky.telegrambot.service.NotificationTaskService;
 
 import javax.annotation.PostConstruct;
+import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 
@@ -67,11 +68,7 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
 
     @Scheduled(cron = "0 0/1 * * * *")
     public void remindAboutScheduledTasks() {
-        notificationTaskService.findTasksToRemind(this::sendMessage);
-    }
-
-    private void sendMessage(NotificationTask notificationTask) {
-        sendMessage(notificationTask.getChatId(), notificationTask.getNotificationMessage());
+        notificationTaskService.findTasksToRemind(this::sendRemainderMessage);
     }
 
     private String createSuccessMsg(NotificationTask notificationTask) {
@@ -89,6 +86,12 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
         if (!response.isOk()) {
             logger.warn("Message was not sent, error code: {}", response.errorCode());
         }
+    }
+
+    private void sendRemainderMessage(NotificationTask notificationTask) {
+        String reminderText = String.format("You've asked to remind you about '%s' on %s.",
+                notificationTask.getNotificationMessage(), notificationTask.getNotificationDate());
+        sendMessage(notificationTask.getChatId(), reminderText);
     }
 
 }
