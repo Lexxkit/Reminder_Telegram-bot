@@ -43,6 +43,12 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
         updates.forEach(update -> {
             logger.info("Processing update: {}", update);
             Message message = update.message();
+            // If the server connection was lost, then message object can be null
+            // So we ignore it in that case
+            if (message == null) {
+                return;
+            }
+
             Long chatId = message.chat().id();
 
             // Search for the INITIAL_MSG
