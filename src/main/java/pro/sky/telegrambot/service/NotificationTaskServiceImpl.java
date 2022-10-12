@@ -2,9 +2,7 @@ package pro.sky.telegrambot.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import pro.sky.telegrambot.constants.TelegramBotMsgConstants;
 import pro.sky.telegrambot.entity.NotificationTask;
 import pro.sky.telegrambot.repository.NotificationTaskRepository;
 
@@ -18,7 +16,8 @@ import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static pro.sky.telegrambot.constants.TelegramBotMsgConstants.*;
+import static pro.sky.telegrambot.constants.TelegramBotMsgConstants.DATE_TIME_FORMAT;
+import static pro.sky.telegrambot.constants.TelegramBotMsgConstants.REMINDER_TEXT_PATTERN;
 
 @Service
 public class NotificationTaskServiceImpl implements NotificationTaskService {
