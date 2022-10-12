@@ -1,9 +1,6 @@
 package pro.sky.telegrambot.entity;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -16,7 +13,8 @@ public class NotificationTask {
     private Long chatId;
     private String notificationMessage;
     private LocalDateTime notificationDate;
-    private boolean isDone = false;
+    @Column(name = "is_done")
+    private boolean done;
 
     public NotificationTask() {
     }
@@ -59,11 +57,11 @@ public class NotificationTask {
     }
 
     public boolean isDone() {
-        return isDone;
+        return done;
     }
 
     public void setDone(boolean done) {
-        isDone = done;
+        this.done = done;
     }
 
     @Override
@@ -71,12 +69,12 @@ public class NotificationTask {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         NotificationTask that = (NotificationTask) o;
-        return isDone == that.isDone && Objects.equals(id, that.id) && Objects.equals(chatId, that.chatId) && Objects.equals(notificationMessage, that.notificationMessage) && Objects.equals(notificationDate, that.notificationDate);
+        return done == that.done && Objects.equals(id, that.id) && Objects.equals(chatId, that.chatId) && Objects.equals(notificationMessage, that.notificationMessage) && Objects.equals(notificationDate, that.notificationDate);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, chatId, notificationMessage, notificationDate, isDone);
+        return Objects.hash(id, chatId, notificationMessage, notificationDate, done);
     }
 
     @Override
@@ -86,7 +84,7 @@ public class NotificationTask {
                 ", chatId=" + chatId +
                 ", notificationMessage='" + notificationMessage + '\'' +
                 ", notificationDate=" + notificationDate +
-                ", isDone=" + isDone +
+                ", isDone=" + done +
                 '}';
     }
 }

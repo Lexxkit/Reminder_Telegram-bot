@@ -1,25 +1,31 @@
 package pro.sky.telegrambot.service;
 
-import com.pengrad.telegrambot.model.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import pro.sky.telegrambot.constants.TelegramBotMsgConstants;
 import pro.sky.telegrambot.entity.NotificationTask;
 import pro.sky.telegrambot.repository.NotificationTaskRepository;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static pro.sky.telegrambot.constants.TelegramBotMsgConstants.*;
 
 @Service
 public class NotificationTaskServiceImpl implements NotificationTaskService {
 
     private final Logger logger = LoggerFactory.getLogger(NotificationTaskServiceImpl.class);
+    // TODO: 12.10.2022 Regexp only for Cyrillic language. How to use any?
+    private final Pattern pattern = Pattern.compile(REMINDER_TEXT_PATTERN);
 
     private final NotificationTaskRepository notificationTaskRepository;
 
@@ -28,32 +34,44 @@ public class NotificationTaskServiceImpl implements NotificationTaskService {
     }
 
     @Override
-    public NotificationTask saveTask(Message message) {
-        // TODO: 11.10.2022 extract creation of entity to private method
-        List<String> messagePieces = parseMessage(message);
-        LocalDateTime dateTime = convertToDateTime(messagePieces.get(0));
-        NotificationTask task = new NotificationTask(messagePieces.get(1), dateTime);
-        task.setChatId(message.chat().id());
-        notificationTaskRepository.save(task);
+    public NotificationTask saveTask(Long chatId, String message) throws DateTimeParseException, NullPointerException {
+        NotificationTask task = notificationTaskRepository.save(createNotificationTaskEntity(chatId, message));
         logger.info("Saved notification: {}", task);
         return task;
     }
 
-    private LocalDateTime convertToDateTime(String date) {
-        // TODO: 11.10.2022 add try-catch for DateTimeParseException or method throws
-        return LocalDateTime.parse(date, DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"));
+    @Override
+    public void findTasksToRemind(Consumer<NotificationTask> taskConsumer) {
+        LocalDateTime dateTimeForSearch = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES);
+        List<NotificationTask> tasksToRemindNow = notificationTaskRepository.findByNotificationDateEqualsAndDoneIsFalse(dateTimeForSearch);
+        for (NotificationTask notificationTask : tasksToRemindNow) {
+            taskConsumer.accept(notificationTask);
+            notificationTask.setDone(true);
+        }
+        notificationTaskRepository.saveAll(tasksToRemindNow);
     }
 
-    private List<String> parseMessage(Message message) {
-        List<String> messagePieces = Collections.emptyList();
-        Pattern pattern = Pattern.compile("([0-9\\.\\:\\s]{16})(\\s)([\\W+]+)");
-        Matcher matcher = pattern.matcher(message.text());
+    private NotificationTask createNotificationTaskEntity(Long chatId, String message) {
+        List<String> messagePieces = parseMessage(message).orElseThrow();
+        LocalDateTime dateTime = convertToDateTime(messagePieces.get(0));
+        NotificationTask task = new NotificationTask(messagePieces.get(1), dateTime);
+        task.setChatId(chatId);
+        return task;
+    }
+
+    private LocalDateTime convertToDateTime(String date) throws DateTimeParseException {
+        return LocalDateTime.parse(date, DateTimeFormatter.ofPattern(DATE_TIME_FORMAT));
+    }
+
+    private Optional<List<String>> parseMessage(String message) {
+        List<String> messagePieces = null;
+        Matcher matcher = pattern.matcher(message);
         if (matcher.matches()) {
             String date = matcher.group(1);
             String reminderText = matcher.group(3);
             messagePieces = List.of(date, reminderText);
         }
-        // TODO: 11.10.2022 If there is no matches - throw new exception???
-        return messagePieces;
+
+        return Optional.of(messagePieces);
     }
 }
