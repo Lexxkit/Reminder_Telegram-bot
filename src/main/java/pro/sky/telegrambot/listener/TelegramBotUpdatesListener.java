@@ -75,17 +75,34 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
         return UpdatesListener.CONFIRMED_UPDATES_ALL;
     }
 
+    /**
+     * Calls the NotificationTaskService method and send notification to the telegram users
+     * according to the cron expression at @Scheduled annotation.
+     */
     @Scheduled(cron = "0 0/1 * * * *")
     public void remindAboutScheduledTasks() {
         notificationTaskService.findTasksToRemind(this::sendRemainderMessage);
     }
 
+    /**
+     * Creates string with proper text from NotificationTask instance.
+     *
+     * @param notificationTask instance of NotificationTask class which information to be sent
+     * @return string of proper format with info from param
+     */
     private String createSuccessMsg(NotificationTask notificationTask) {
         return String.format("OK, I will remind you about '%s' on %s",
                 notificationTask.getNotificationMessage(),
                 notificationTask.getNotificationDate());
     }
 
+    /**
+     * Creates SendMessage instance for telegram chat with some text
+     * and sends it to the chat.
+     *
+     * @param chatId index of a telegram chat to which the message is sent
+     * @param textToSend string to be sent
+     */
     private void sendMessage(Long chatId, String textToSend) {
         // Create message to send and send it to chat defined by id
         SendMessage sendMessage = new SendMessage(chatId, textToSend);
@@ -97,6 +114,11 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
         }
     }
 
+    /**
+     * Forms a string from NotificationTask instance and send it to the telegram chat.
+     *
+     * @param notificationTask instance of NotificationTask class which information to be sent
+     */
     private void sendRemainderMessage(NotificationTask notificationTask) {
         String reminderText = String.format("You've asked to remind you about '%s' on %s.",
                 notificationTask.getNotificationMessage(), notificationTask.getNotificationDate());
