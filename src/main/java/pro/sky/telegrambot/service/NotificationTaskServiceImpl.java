@@ -32,6 +32,16 @@ public class NotificationTaskServiceImpl implements NotificationTaskService {
         this.notificationTaskRepository = notificationTaskRepository;
     }
 
+    /**
+     * Method creates NotificationTask instance from params and saves it to the DB.
+     *
+     * @param chatId from Telegram message instance
+     * @param message notification task that will be saved
+     * @return NotificationTask instance that was saved in DB
+     * @throws DateTimeParseException
+     * @throws IndexOutOfBoundsException
+     * @throws TextPatternDoesNotMatchException
+     */
     @Override
     public NotificationTask saveTask(Long chatId, String message) throws DateTimeParseException, IndexOutOfBoundsException, TextPatternDoesNotMatchException {
         NotificationTask task = notificationTaskRepository.save(createNotificationTaskEntity(chatId, message));
@@ -39,10 +49,20 @@ public class NotificationTaskServiceImpl implements NotificationTaskService {
         return task;
     }
 
+    /**
+     * Method find notification tasks in DB where its notification date equals to dateTimeForSearch and done flag is false.
+     * If at least one task was found, then each found task delivered to consumer which sends it to telegram bot user.
+     *
+     * @param taskConsumer from TelegramBotUpdatesListener, use for send notification to the user.
+     */
     @Override
     public void findTasksToRemind(Consumer<NotificationTask> taskConsumer) {
+        // Truncate seconds from DateTime object, can be adjusted alongside
+        // with cron expression settings at TelegramBotUpdatesListener
         LocalDateTime dateTimeForSearch = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES);
-        List<NotificationTask> tasksToRemindNow = notificationTaskRepository.findByNotificationDateEqualsAndDoneIsFalse(dateTimeForSearch);
+
+        List<NotificationTask> tasksToRemindNow = notificationTaskRepository
+                .findByNotificationDateEqualsAndDoneIsFalse(dateTimeForSearch);
         if (tasksToRemindNow.size() > 0) {
             logger.info("Found {} tasks to remind. Sending notifications...", tasksToRemindNow.size());
             for (NotificationTask notificationTask : tasksToRemindNow) {
@@ -62,6 +82,12 @@ public class NotificationTaskServiceImpl implements NotificationTaskService {
         return task;
     }
 
+    /**
+     * Converts string with DATE_TIME_FORMAT pattern to LocalDateTime object.
+     * @param date The string to convert to a LocalDateTime object
+     * @return LocalDateTime instance
+     * @throws DateTimeParseException If param doesn't match DATE_TIME_FORMAT pattern
+     */
     private LocalDateTime convertToDateTime(String date) throws DateTimeParseException {
         return LocalDateTime.parse(date, DateTimeFormatter.ofPattern(DATE_TIME_FORMAT));
     }
