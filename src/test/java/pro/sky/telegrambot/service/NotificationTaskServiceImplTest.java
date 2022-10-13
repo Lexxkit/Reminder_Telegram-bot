@@ -44,18 +44,21 @@ class NotificationTaskServiceImplTest {
     @Test
     void shouldThrowDateTimeParseException_whenDateTimeHasWrongPattern() {
 
-        assertThatThrownBy(() -> out.saveTask(1L, "01:01:2023 00.00 Тестовое сообщение")).isInstanceOf(DateTimeParseException.class);
+        assertThatThrownBy(() -> out.saveTask(1L, "01:01:2023 00.00 Тестовое сообщение"))
+                .isInstanceOf(DateTimeParseException.class);
     }
 
     @Test
     void shouldThrowTextPatternDoesNotMatchException_whenTextDoesNotMatchRegexp() {
 
-        assertThatThrownBy(() -> out.saveTask(1L, "01.01.2023 00:00Тестовое сообщение")).isInstanceOf(TextPatternDoesNotMatchException.class);
+        assertThatThrownBy(() -> out.saveTask(1L, "01.01.2023 00:00Тестовое сообщение"))
+                .isInstanceOf(TextPatternDoesNotMatchException.class);
     }
 
     @Test
     void shouldThrowDateTimeFromThePastException_whenUserInputsDateTimeFromThePast() {
 
-        assertThatThrownBy(() -> out.saveTask(1L, "01.01.2000 00:00 Тестовое сообщение")).isInstanceOf(DateTimeFromThePastException.class);
+        assertThatThrownBy(() -> out.saveTask(1L, "01.01.2000 00:00 Тестовое сообщение"))
+                .isInstanceOf(DateTimeFromThePastException.class);
     }
 }

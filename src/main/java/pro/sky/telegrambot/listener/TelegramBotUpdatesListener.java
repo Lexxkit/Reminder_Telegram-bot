@@ -45,7 +45,7 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
             logger.info("Processing update: {}", update);
             Message message = update.message();
             // If the server connection was lost, then message object can be null
-            // So we ignore it in that case
+            // So we ignore it in this case
             if (message == null) {
                 return;
             }
@@ -64,11 +64,10 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
                     sendMessage(chatId, createSuccessMsg(notificationTask));
                 } catch (IndexOutOfBoundsException | TextPatternDoesNotMatchException | DateTimeParseException e) {
                     // In case of wrong user input don't save to DB and send message to user
-                    logger.warn("Wrong pattern in message: {}", message.text());
-                    e.printStackTrace();
+                    logger.warn("User input doesn't match the pattern: {}", message.text());
                     sendMessage(chatId, PROBLEM_OCCURS_MSG);
                 } catch (DateTimeFromThePastException e) {
-                    logger.info("User tries to set a remind in the past. {}", e.getMessage());
+                    logger.warn("User tries to set a remind in the past. {}", e.getMessage());
                     sendMessage(chatId, USE_DATE_IN_FUTURE);
                 }
             }

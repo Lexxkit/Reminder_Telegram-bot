@@ -24,9 +24,7 @@ import static pro.sky.telegrambot.constants.TelegramBotConstants.REMINDER_TEXT_P
 public class NotificationTaskServiceImpl implements NotificationTaskService {
 
     private final Logger logger = LoggerFactory.getLogger(NotificationTaskServiceImpl.class);
-    // TODO: 12.10.2022 Regexp only for Cyrillic language. How to use any?
     private final Pattern pattern = Pattern.compile(REMINDER_TEXT_PATTERN);
-
     private final NotificationTaskRepository notificationTaskRepository;
 
     public NotificationTaskServiceImpl(NotificationTaskRepository notificationTaskRepository) {
@@ -75,6 +73,14 @@ public class NotificationTaskServiceImpl implements NotificationTaskService {
         logger.info("All tasks were sent to users.");
     }
 
+    /**
+     * Creates notification task from the message and chat id.
+     *
+     * @param chatId index of a telegram chat.
+     * @param message text from a telegram chat message instance.
+     * @return NotificationTask instance
+     * @throws IndexOutOfBoundsException if list with the message parts has inappropriate size
+     */
     private NotificationTask createNotificationTaskEntity(Long chatId, String message) throws IndexOutOfBoundsException {
         List<String> messagePieces = parseMessage(message);
         LocalDateTime dateTime = convertToDateTime(messagePieces.get(0));
@@ -89,6 +95,7 @@ public class NotificationTaskServiceImpl implements NotificationTaskService {
 
     /**
      * Converts string with DATE_TIME_FORMAT pattern to LocalDateTime object.
+     *
      * @param date The string to convert to a LocalDateTime object
      * @return LocalDateTime instance
      * @throws DateTimeParseException If param doesn't match DATE_TIME_FORMAT pattern
@@ -97,6 +104,12 @@ public class NotificationTaskServiceImpl implements NotificationTaskService {
         return LocalDateTime.parse(date, DateTimeFormatter.ofPattern(DATE_TIME_FORMAT));
     }
 
+    /**
+     * Check if string matches the pattern and return list of it parts. If string doesn't match throws exception.
+     *
+     * @param message string to parse
+     * @return list of strings contains parts of the initial string
+     */
     private List<String> parseMessage(String message) {
         Matcher matcher = pattern.matcher(message);
         if (matcher.matches()) {
@@ -104,7 +117,6 @@ public class NotificationTaskServiceImpl implements NotificationTaskService {
             String reminderText = matcher.group(3);
             return List.of(date, reminderText);
         } else {
-            logger.warn("User input doesn't match the pattern: {}", message);
             throw new TextPatternDoesNotMatchException();
         }
     }
