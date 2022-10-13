@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import pro.sky.telegrambot.entity.NotificationTask;
+import pro.sky.telegrambot.exception.DateTimeFromThePastException;
 import pro.sky.telegrambot.exception.TextPatternDoesNotMatchException;
 import pro.sky.telegrambot.repository.NotificationTaskRepository;
 
@@ -77,6 +78,10 @@ public class NotificationTaskServiceImpl implements NotificationTaskService {
     private NotificationTask createNotificationTaskEntity(Long chatId, String message) throws IndexOutOfBoundsException {
         List<String> messagePieces = parseMessage(message);
         LocalDateTime dateTime = convertToDateTime(messagePieces.get(0));
+        // Check that date is in the future. If NOT - throw Exception.
+        if (!dateTime.isAfter(LocalDateTime.now())){
+            throw new DateTimeFromThePastException("DateTime is less or equals now: " + dateTime);
+        }
         NotificationTask task = new NotificationTask(messagePieces.get(1), dateTime);
         task.setChatId(chatId);
         return task;

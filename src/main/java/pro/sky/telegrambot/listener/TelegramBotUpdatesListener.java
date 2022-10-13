@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import pro.sky.telegrambot.entity.NotificationTask;
+import pro.sky.telegrambot.exception.DateTimeFromThePastException;
 import pro.sky.telegrambot.exception.TextPatternDoesNotMatchException;
 import pro.sky.telegrambot.service.NotificationTaskService;
 
@@ -66,6 +67,9 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
                     logger.warn("Wrong pattern in message: {}", message.text());
                     e.printStackTrace();
                     sendMessage(chatId, PROBLEM_OCCURS_MSG);
+                } catch (DateTimeFromThePastException e) {
+                    logger.info("User tries to set a remind in the past. {}", e.getMessage());
+                    sendMessage(chatId, USE_DATE_IN_FUTURE);
                 }
             }
         });
