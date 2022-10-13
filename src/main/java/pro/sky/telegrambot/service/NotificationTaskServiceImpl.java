@@ -16,8 +16,8 @@ import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static pro.sky.telegrambot.constants.TelegramBotMsgConstants.DATE_TIME_FORMAT;
-import static pro.sky.telegrambot.constants.TelegramBotMsgConstants.REMINDER_TEXT_PATTERN;
+import static pro.sky.telegrambot.constants.TelegramBotConstants.DATE_TIME_FORMAT;
+import static pro.sky.telegrambot.constants.TelegramBotConstants.REMINDER_TEXT_PATTERN;
 
 @Service
 public class NotificationTaskServiceImpl implements NotificationTaskService {

@@ -18,7 +18,7 @@ import javax.annotation.PostConstruct;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 
-import static pro.sky.telegrambot.constants.TelegramBotMsgConstants.*;
+import static pro.sky.telegrambot.constants.TelegramBotConstants.*;
 
 @Service
 public class TelegramBotUpdatesListener implements UpdatesListener {

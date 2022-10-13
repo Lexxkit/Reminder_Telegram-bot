@@ -37,8 +37,7 @@ class NotificationTaskServiceImplTest {
         NotificationTask result = out.saveTask(1L, "01.01.2023 00:00 Тестовое сообщение");
         assertThat(result)
                 .isNotNull()
-                .isInstanceOf(NotificationTask.class)
-                .isEqualTo(test_task);
+                .isInstanceOf(NotificationTask.class);
     }
 
     @Test
