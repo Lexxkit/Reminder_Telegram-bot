@@ -8,3 +8,6 @@ CREATE TABLE notification_task (
     notification_date timestamp not null,
     is_done boolean not null default false
 );
+
+-- changeset oalekseenko:2
+create index notification_task_date_index on notification_task (notification_date);
