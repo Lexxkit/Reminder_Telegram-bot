@@ -53,7 +53,7 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
             Long chatId = message.chat().id();
 
             // Search for the INITIAL_MSG
-            if (message.text().equals(INITIAL_MSG)) {
+            if (INITIAL_MSG.equals(message.text())) {
                 // Send GREETINGS_MSG if INITIAL_MSG was found
                 logger.info("Bot initial message received: {}", message.text());
                 sendMessage(chatId, GREETING_MSG);
