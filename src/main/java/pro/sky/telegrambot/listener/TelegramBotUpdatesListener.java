@@ -62,7 +62,7 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
                     // Save task to DB if no problems found and send success message to user
                     NotificationTask notificationTask = notificationTaskService.saveTask(chatId, message.text());
                     sendMessage(chatId, createSuccessMsg(notificationTask));
-                } catch (IndexOutOfBoundsException | TextPatternDoesNotMatchException | DateTimeParseException e) {
+                } catch (TextPatternDoesNotMatchException | DateTimeParseException e) {
                     // In case of wrong user input don't save to DB and send message to user
                     logger.warn("User input doesn't match the pattern: {}", message.text());
                     sendMessage(chatId, PROBLEM_OCCURS_MSG);

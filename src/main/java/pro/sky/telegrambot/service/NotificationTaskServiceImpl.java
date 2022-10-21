@@ -2,6 +2,7 @@ package pro.sky.telegrambot.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 import pro.sky.telegrambot.entity.NotificationTask;
 import pro.sky.telegrambot.exception.DateTimeFromThePastException;
@@ -38,11 +39,10 @@ public class NotificationTaskServiceImpl implements NotificationTaskService {
      * @param message notification task that will be saved
      * @return NotificationTask instance that was saved in DB
      * @throws DateTimeParseException
-     * @throws IndexOutOfBoundsException
      * @throws TextPatternDoesNotMatchException
      */
     @Override
-    public NotificationTask saveTask(Long chatId, String message) throws DateTimeParseException, IndexOutOfBoundsException, TextPatternDoesNotMatchException {
+    public NotificationTask saveTask(Long chatId, String message) throws DateTimeParseException, TextPatternDoesNotMatchException {
         NotificationTask task = notificationTaskRepository.save(createNotificationTaskEntity(chatId, message));
         logger.info("Saved task: {}", task);
         return task;
@@ -79,16 +79,15 @@ public class NotificationTaskServiceImpl implements NotificationTaskService {
      * @param chatId index of a telegram chat.
      * @param message text from a telegram chat message instance.
      * @return NotificationTask instance
-     * @throws IndexOutOfBoundsException if list with the message parts has inappropriate size
      */
-    private NotificationTask createNotificationTaskEntity(Long chatId, String message) throws IndexOutOfBoundsException {
-        List<String> messagePieces = parseMessage(message);
-        LocalDateTime dateTime = convertToDateTime(messagePieces.get(0));
+    private NotificationTask createNotificationTaskEntity(Long chatId, String message) {
+        Pair<String, String> messagePieces = parseMessage(message);
+        LocalDateTime dateTime = convertToDateTime(messagePieces.getFirst());
         // Check that date is in the future. If NOT - throw Exception.
         if (!dateTime.isAfter(LocalDateTime.now())){
             throw new DateTimeFromThePastException("DateTime is less or equals now: " + dateTime);
         }
-        NotificationTask task = new NotificationTask(messagePieces.get(1), dateTime);
+        NotificationTask task = new NotificationTask(messagePieces.getSecond(), dateTime);
         task.setChatId(chatId);
         return task;
     }
@@ -105,17 +104,18 @@ public class NotificationTaskServiceImpl implements NotificationTaskService {
     }
 
     /**
-     * Check if string matches the pattern and return list of it parts. If string doesn't match throws exception.
+     * Check if string matches the pattern and return list of it parts.
+     * If string doesn't match throws exception.
      *
      * @param message string to parse
-     * @return list of strings contains parts of the initial string
+     * @return pair of strings: first - datetime, second - message text from the initial string
      */
-    private List<String> parseMessage(String message) {
+    private Pair<String, String> parseMessage(String message) {
         Matcher matcher = pattern.matcher(message);
         if (matcher.matches()) {
             String date = matcher.group(1);
             String reminderText = matcher.group(3);
-            return List.of(date, reminderText);
+            return Pair.of(date, reminderText);
         } else {
             throw new TextPatternDoesNotMatchException();
         }
